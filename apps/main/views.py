@@ -10,10 +10,21 @@ from django.http import JsonResponse
 User = get_user_model()
 
 @api_view(['GET'])
-def my_view(request):
-    data = {'message': 'Hello, world!'}
-    return JsonResponse(data)
+def post_list(request):
+    queryset = Post.objects.all()
+    serializer = PostSerializer(queryset, many=True)
+    return Response(serializer.data, status=200)
 
 
-
-
+@api_view(['POST'])
+def create_post(request):
+    serializer = PostSerializer(data=request.data)
+    if serializer.is_valid(raise_exception=True):
+        serializer.save()
+        return Response('Пост успешно создан', status=200)
+    
+@api_view(['DELETE'])
+def delete_post(request, id):
+    post = get_object_or_404(Post, id=id)
+    post.delete()
+    return Response('Пост успешно удален', status=204)
